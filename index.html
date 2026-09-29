@@ -314,6 +314,36 @@ p,.txt,.faq p,.for p,.steps p,.bento span{text-wrap:pretty}
 .btn.done .ok path{animation:draw .5s .15s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes pop2{0%{transform:scale(.92)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+/* fixes: no black card, text stays inside cards */
+.for .pw,.bento .pw{perspective:none}
+.for .pw::after{content:"";position:absolute;inset:0;border-radius:32px;background:#0b1730;opacity:var(--dim,0);pointer-events:none;z-index:2}
+.bento .card b,.bento .card span{transform:translateZ(22px)}
+.steps .card i{transform:translateZ(36px)}
+.steps .card b,.steps .card p,.for .card b,.for .card p{transform:translateZ(18px)}
+@media(max-width:700px){.bento .card b,.bento .card span,.steps .card i,.steps .card b,.steps .card p,.for .card b,.for .card p{transform:none}}
+
+/* WHO IT'S FOR: expanding panels */
+.fp-row{display:flex;gap:16px;height:470px}
+.fp{position:relative;flex:1;min-width:0;border-radius:32px;padding:34px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.06);transition:flex .7s var(--ease),box-shadow .4s;outline:none}
+.fp:nth-child(2){background:linear-gradient(160deg,#fff 30%,#e3f8ec)}
+.fp:nth-child(3){background:linear-gradient(160deg,#fff 30%,#e2ecff)}
+.fp.on{flex:2.7;box-shadow:0 40px 90px rgba(20,40,90,.16)}
+.fp .fn{position:absolute;top:28px;left:34px;font-size:15px;font-weight:600;color:var(--muted)}
+.fp h3{margin:0 0 12px;font-size:clamp(24px,2.6vw,38px);font-weight:700;letter-spacing:-.04em;line-height:1.06}
+.fp p{margin:0;color:var(--muted);font-size:19px;line-height:1.5;max-height:0;opacity:0;overflow:hidden;transition:max-height .6s var(--ease),opacity .35s}
+.fp.on p{max-height:220px;opacity:1;transition-delay:.15s,.2s}
+.fp::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(0,113,227,.14),transparent 65%);opacity:0;transition:opacity .3s;pointer-events:none}
+.fp:hover::after{opacity:1}
+@media(max-width:700px){.fp-row{flex-direction:column;height:auto}.fp{flex:none;padding:28px 26px 26px}.fp .fn{position:static;margin-bottom:34px}.fp p{max-height:none;opacity:1}}
+
+/* WHAT THE AGENT DOES: stacked plates + glowing edge, no tilting text */
+.bento .card{padding:38px;overflow:visible;transform-style:flat;border:1px solid rgba(255,255,255,.95);box-shadow:0 1px 0 #fff inset,0 14px 0 -6px rgba(255,255,255,.75),0 28px 0 -12px rgba(255,255,255,.45),0 44px 60px -22px rgba(20,40,90,.2);transition:transform .5s var(--spring),box-shadow .5s}
+.bento .card:hover{transform:translateY(-10px);box-shadow:0 1px 0 #fff inset,0 22px 0 -8px rgba(255,255,255,.8),0 44px 0 -16px rgba(255,255,255,.5),0 70px 80px -24px rgba(20,40,90,.3)}
+.bento .card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:radial-gradient(280px circle at var(--mx,50%) var(--my,0%),rgba(31,170,89,.95),rgba(0,113,227,.65) 45%,transparent 75%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);opacity:0;transition:opacity .3s;pointer-events:none}
+.bento .card:hover::before{opacity:1}
+.bento .card b,.bento .card span{transform:none!important}
+@media(max-width:700px){.bento .card{padding:28px}}
 </style>
 </head>
 <body>
@@ -404,10 +434,10 @@ p,.txt,.faq p,.for p,.steps p,.bento span{text-wrap:pretty}
 <section id="for" style="padding-top:0"><div class="shell">
 <p class="label r">Who it's for</p>
 <p class="h big r">Any business that gets orders or bookings on WhatsApp.</p>
-<div class="for">
-<div class="pw" style="--i:0"><div class="card"><b>Restaurants and takeaways</b><p>Customers ask what's on the menu, order, and choose delivery or pickup. The agent takes the order and sends it to the kitchen.</p></div></div>
-<div class="pw" style="--i:1"><div class="card"><b>Salons, clinics and studios</b><p>Customers ask about prices and free slots. The agent books the time and sends a reminder.</p></div></div>
-<div class="pw" style="--i:2"><div class="card"><b>Shops and online sellers</b><p>Customers ask what's in stock and how much it costs. The agent answers and collects the order.</p></div></div>
+<div class="fp-row">
+<article class="fp on" tabindex="0"><span class="fn">01</span><h3>Restaurants and takeaways</h3><p>Customers ask what's on the menu, order, and choose delivery or pickup. The agent takes the order and sends it to the kitchen.</p></article>
+<article class="fp" tabindex="0"><span class="fn">02</span><h3>Salons, clinics and studios</h3><p>Customers ask about prices and free slots. The agent books the time and sends a reminder.</p></article>
+<article class="fp" tabindex="0"><span class="fn">03</span><h3>Shops and online sellers</h3><p>Customers ask what's in stock and how much it costs. The agent answers and collects the order.</p></article>
 </div></div></section>
 
 <section style="padding-top:0"><div class="shell"><p class="label r">About</p><div class="about">
@@ -677,11 +707,11 @@ if(window.gsap&&window.ScrollTrigger&&!reduce){
   gsap.from(w,{opacity:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:w,start:'top 92%',once:true}});
   if(matchMedia('(min-width:901px)').matches)gsap.fromTo(w,{y:[70,150,30,120][k]},{y:[-30,-80,-10,-60][k],ease:'none',scrollTrigger:{trigger:'.bento',start:'top bottom',end:'bottom top',scrub:true}});
  });
- if(matchMedia('(hover:hover) and (min-width:901px)').matches)$('.bento .card, .steps .card, .for .card').forEach(c=>{
-  gsap.set(c,{transformPerspective:900});
+ if(matchMedia('(hover:hover) and (min-width:901px)').matches)$('.steps .card').forEach(c=>{
+  gsap.set(c,{transformPerspective:1800});
   const rx=gsap.quickTo(c,'rotateX',{duration:.5,ease:'power3.out'}),ry=gsap.quickTo(c,'rotateY',{duration:.5,ease:'power3.out'}),z=gsap.quickTo(c,'z',{duration:.5,ease:'power3.out'});
-  c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;ry(x*18);rx(-y*18);c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')});
-  c.addEventListener('pointerenter',()=>z(50));
+  c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;ry(x*9);rx(-y*9);c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')});
+  c.addEventListener('pointerenter',()=>z(20));
   c.addEventListener('pointerleave',()=>{rx(0);ry(0);z(0)});
  });
  // How it works: pages unfold in 3D one after another, and a line draws between the steps
@@ -689,9 +719,16 @@ if(window.gsap&&window.ScrollTrigger&&!reduce){
  const stp=document.querySelector('.steps');
  ScrollTrigger.create({trigger:stp,start:'top 80%',end:'bottom 55%',scrub:true,onUpdate:s=>stp.style.setProperty('--p',s.progress)});
  gsap.to('.o1',{y:-280,ease:'none',scrollTrigger:hw});gsap.to('.o2',{y:220,ease:'none',scrollTrigger:hw});
- // Who it's for: cards stack and cascade over each other
- const fc=$('.for .pw');
- fc.forEach((c,k)=>{if(k<fc.length-1)gsap.to(c,{scale:.93,rotateX:8,transformPerspective:1000,transformOrigin:'50% 0%',filter:'brightness(.96)',ease:'none',scrollTrigger:{trigger:fc[k+1],start:'top 90%',end:'top '+(96+(k+1)*28)+'px',scrub:true}})});
+ // Who it's for: expanding panels (hover or tap to open, opens by itself until you touch it)
+ const fps=$('.fp');let auto=true,fi=0,fvis=false;
+ const openFp=p=>fps.forEach(x=>x.classList.toggle('on',x===p));
+ fps.forEach((p,k)=>{p.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){auto=false;openFp(p)}});p.addEventListener('click',()=>{auto=false;openFp(p)});p.addEventListener('focus',()=>{auto=false;openFp(p)})});
+ const frow=document.querySelector('.fp-row');
+ if(frow){new IntersectionObserver(es=>fvis=es[0].isIntersecting,{threshold:.4}).observe(frow);
+  setInterval(()=>{if(auto&&fvis&&innerWidth>700){fi=(fi+1)%fps.length;openFp(fps[fi])}},3400);
+  gsap.from('.fp',{y:80,opacity:0,stagger:.12,duration:.9,ease:'power3.out',scrollTrigger:{trigger:frow,start:'top 85%',once:true}})}
+ // cursor glow for panels and "What the agent does" cards
+ $('.bento .card, .fp').forEach(c=>c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}));
 
  // About photo eases in with a slow zoom
  gsap.fromTo('.photo img',{scale:1.18},{scale:1,ease:'none',scrollTrigger:{trigger:'.photo',start:'top bottom',end:'bottom top',scrub:true}});

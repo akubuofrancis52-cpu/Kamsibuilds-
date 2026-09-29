@@ -642,9 +642,15 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // MESSAGE SOUND (our own synthesized chime, off until the visitor turns it on)
 let AC=null,soundOn=false;
-window.chatTone=k=>{if(!soundOn||!AC)return;const t=AC.currentTime,g=AC.createGain();g.connect(AC.destination);
- (k==='in'?[[880,0],[1318.5,.09]]:[[620,0]]).forEach(([f,d])=>{const o=AC.createOscillator();o.type='sine';o.frequency.value=f;o.connect(g);o.start(t+d);o.stop(t+d+.18)});
- g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.12,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.38)};
+window.chatTone=k=>{if(!soundOn||!AC)return;const t0=AC.currentTime+.005,master=AC.createGain();master.gain.value=.45;master.connect(AC.destination);
+ // bell-like note: fundamental plus two soft overtones with a fast decay
+ const bell=(f,at,len,vol)=>[[1,1],[2,.35],[3.01,.12]].forEach(([m,a])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f*m;
+  g.gain.setValueAtTime(0,t0+at);g.gain.linearRampToValueAtTime(vol*a,t0+at+.004);g.gain.exponentialRampToValueAtTime(.0001,t0+at+len);o.connect(g);g.connect(master);o.start(t0+at);o.stop(t0+at+len+.02)});
+ // bubbly pop: a quick pitch glide
+ const blip=(f1,f2,at,len,vol)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(f1,t0+at);o.frequency.exponentialRampToValueAtTime(f2,t0+at+len*.6);
+  g.gain.setValueAtTime(0,t0+at);g.gain.linearRampToValueAtTime(vol,t0+at+.005);g.gain.exponentialRampToValueAtTime(.0001,t0+at+len);o.connect(g);g.connect(master);o.start(t0+at);o.stop(t0+at+len+.02)};
+ if(k==='in'){blip(420,880,0,.09,.22);bell(1174.7,.07,.22,.2);bell(1568,.17,.34,.2)}   // pop, then a rising two-note chime
+ else{blip(600,1100,0,.11,.18)}};                                                        // short "sent" bloop
 {const b=document.getElementById('snd');if(b)b.addEventListener('click',()=>{soundOn=!soundOn;if(soundOn){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.resume)AC.resume();window.chatTone('in')}
  b.setAttribute('aria-pressed',soundOn);b.querySelector('span').textContent=soundOn?'Message sound: on':'Message sound: off'});
  const rs=document.getElementById('ringsec');

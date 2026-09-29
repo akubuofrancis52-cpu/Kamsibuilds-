@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# After you publish, add your sitemap link on the next line, e.g.
+# Sitemap: https://yourdomain.com/sitemap.xml

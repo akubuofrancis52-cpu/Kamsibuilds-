@@ -521,6 +521,15 @@ const AUTO_APPROVE = false;
 const $ = (s,p=document)=>[...p.querySelectorAll(s)];
 $('[data-wa]').forEach(a=>{a.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent("Hello Kamsi, I'd like an agent for my business.");a.target="_blank";a.rel="noopener"});
 $('[data-mail]').forEach(a=>a.href="mailto:"+EMAIL+"?subject="+encodeURIComponent("WhatsApp agent for my business"));
+// Email buttons: phones open the mail app. On computers with no mail app set up, open Gmail in a new tab instead.
+$('[data-mail]').forEach(a=>a.addEventListener('click',e=>{
+ if(matchMedia('(pointer:coarse)').matches)return;
+ e.preventDefault();
+ const sub=encodeURIComponent("WhatsApp agent for my business");
+ let opened=false;const onb=()=>opened=true;addEventListener('blur',onb,{once:true});
+ location.href="mailto:"+EMAIL+"?subject="+sub;
+ setTimeout(()=>{removeEventListener('blur',onb);if(!opened)window.open("https://mail.google.com/mail/?view=cm&fs=1&to="+EMAIL+"&su="+sub,"_blank","noopener")},700);
+}));
 // analytics (only if you set GA_ID) and sticky mobile button
 if(GA_ID){const g=document.createElement('script');g.async=true;g.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;document.head.appendChild(g);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',GA_ID)}
 const stk=document.querySelector('.stk');

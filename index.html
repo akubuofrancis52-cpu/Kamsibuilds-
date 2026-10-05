@@ -375,6 +375,25 @@ p,.txt,.faq p,.for p,.steps p,.bento span{text-wrap:pretty}
 .rci.hov{transform:perspective(900px) rotateX(calc(var(--rx,0) * 1deg)) rotateY(calc(var(--ry,0) * 1deg)) scale(1.04)}
 .ring{perspective:2400px}
 .rc,.rci{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}
+
+/* spoken intro */
+.tts{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom) + 16px);z-index:55;display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 30px rgba(0,0,0,.14);color:var(--fg);cursor:pointer;transition:transform .3s var(--spring)}
+.tts:hover{transform:scale(1.05)}.tts svg{width:20px;height:20px}
+.tts[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+.tts[hidden],.tts-card[hidden]{display:none}
+.tts-card{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 76px);transform:translateX(-50%);z-index:56;width:min(420px,calc(100% - 28px));background:rgba(255,255,255,.92);backdrop-filter:blur(18px);border-radius:26px;padding:22px 24px;box-shadow:0 24px 70px rgba(20,40,90,.25);text-align:center;animation:pop2 .6s var(--spring)}
+.tts-card p{margin:0 0 16px;font-size:20px;font-weight:600;letter-spacing:-.02em}
+.tts-card div{display:flex;gap:10px;justify-content:center}
+.tts-card .btn{width:auto;padding:12px 22px;font-size:16px}
+
+/* spoken intro: language buttons */
+.tts{padding:7px 8px 7px 16px;gap:8px}
+.tts.on{background:var(--green);border-color:var(--green);color:#fff}
+.ttsb{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;background:none;border:0;color:inherit;cursor:pointer;padding:4px 2px}
+.lang{font:inherit;font-size:13px;font-weight:700;padding:7px 11px;border-radius:999px;border:1px solid var(--hair);background:#fff;color:var(--fg);cursor:pointer}
+.lang[aria-pressed=true]{background:var(--fg);color:#fff;border-color:var(--fg)}
+.tts-card p span{font-size:15px;font-weight:500;color:var(--muted)}
+.ttsno{display:block;margin:14px auto 0;background:none;border:0;font:inherit;font-size:14px;color:var(--muted);cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -533,6 +552,9 @@ p,.txt,.faq p,.for p,.steps p,.bento span{text-wrap:pretty}
 <div><a href="#how">How it works</a><a href="#for">Who it's for</a><a href="#faq">Questions</a><a data-wa href="#">WhatsApp</a><a data-mail href="#">Email</a><a href="privacy.html">Privacy</a></div>
 </div></footer>
 
+<div class="tts" id="ttsBar" hidden><button class="ttsb" id="tts" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg><span>Hear intro</span></button><button class="lang" id="langEN" type="button" aria-pressed="true">EN</button><button class="lang" id="langFR" type="button" aria-pressed="false">FR</button></div>
+<div class="tts-card" id="ttsCard" role="dialog" aria-label="Spoken intro" hidden><p>Want a short spoken intro?<br><span>Voulez-vous une courte présentation audio ?</span></p><div><button class="btn wa sm" id="ttsEN" type="button">English</button><button class="btn wa sm" id="ttsFR" type="button">Français</button></div><button class="ttsno" id="ttsNo" type="button">Not now · Non merci</button></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.1.20/lenis.min.js"></script>
@@ -655,6 +677,52 @@ window.chatTone=k=>{if(!soundOn||!AC)return;const t0=AC.currentTime+.005,master=
  b.setAttribute('aria-pressed',soundOn);b.querySelector('span').textContent=soundOn?'Message sound: on':'Message sound: off'});
  const rs=document.getElementById('ringsec');
  if(b&&rs&&'IntersectionObserver' in window)new IntersectionObserver(es=>{if(!es[0].isIntersecting&&soundOn){soundOn=false;b.setAttribute('aria-pressed','false');b.querySelector('span').textContent='Message sound: off'}}).observe(rs)}
+
+// SPOKEN INTRO in English or French. Plays intro-en.mp3 / intro-fr.mp3 if you add them, otherwise the browser's own voice.
+// Browsers block speech until the visitor taps something, so if auto-start is blocked we ask first.
+(()=>{
+ const bar=document.getElementById('ttsBar'),btn=document.getElementById('tts'),card=document.getElementById('ttsCard');if(!bar||!btn||!card)return;
+ const hasTTS='speechSynthesis' in window,g=id=>document.getElementById(id);
+ const L={
+  en:{tag:'en-US',src:['intro-en.mp3','intro.mp3'],label:['Hear intro','Stop intro'],lines:["Hi, I'm Kamsi. I build AI agents that run on WhatsApp.","The messages keep coming. How much is this? Are you open today? Can I book for Saturday? You answer some, you miss others, and the customer who waited two hours goes somewhere else. Not because your business is bad, just because you were busy.","My agents answer your customers on WhatsApp, take orders and bookings, and only call you when they need you. You don't have to open your phone.","Scroll down to see how it works, or tap Talk to me and let's get an agent on your WhatsApp."]},
+  fr:{tag:'fr-FR',src:['intro-fr.mp3'],label:['Écouter','Arrêter'],lines:["Bonjour, moi c'est Kamsi. Je crée des agents IA qui fonctionnent sur WhatsApp.","Les messages n'arrêtent pas d'arriver. C'est combien ? Vous êtes ouverts aujourd'hui ? Je peux réserver pour samedi ? Vous répondez à certains, vous en ratez d'autres, et le client qui a attendu deux heures va voir ailleurs. Pas parce que votre commerce est mauvais, simplement parce que vous étiez occupé.","Mes agents répondent à vos clients sur WhatsApp, prennent les commandes et les réservations, et ne vous appellent que lorsqu'ils ont besoin de vous. Vous n'avez pas besoin d'ouvrir votre téléphone.","Descendez pour voir comment ça marche, ou touchez le bouton vert pour m'écrire sur WhatsApp."]}
+ };
+ const store=(k,v)=>{try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v)}catch(e){}};
+ let lang=store('ttsLang')||((navigator.language||'').toLowerCase().startsWith('fr')?'fr':'en'),on=false,asked=false,voice=null,au=null;
+ const pick=()=>{if(!hasTTS)return;const v=speechSynthesis.getVoices().filter(x=>x.lang.toLowerCase().startsWith(lang));voice=v.find(x=>/natural|neural|online/i.test(x.name))||v.find(x=>/google|thomas|amelie|denise|henri|samantha|aria|jenny|daniel/i.test(x.name))||v.find(x=>x.default)||v[0]||null};
+ const state=v=>{on=v;bar.classList.toggle('on',v);btn.querySelector('span').textContent=L[lang].label[v?1:0]};
+ const setLang=l=>{lang=l;store('ttsLang',l);g('langEN').setAttribute('aria-pressed',l==='en');g('langFR').setAttribute('aria-pressed',l==='fr');pick();state(false)};
+ function stop(){if(hasTTS)speechSynthesis.cancel();if(au){const a=au;au=null;a.pause()}state(false)}
+ function blocked(auto){if(auto&&!asked&&!store('ttsDone')){asked=true;card.hidden=false}}
+ function speak(auto){stop();playAudio(0,auto)}
+ function playAudio(i,auto){
+  const srcs=L[lang].src;if(i>=srcs.length){speakTTS(auto);return}
+  const a=new Audio(srcs[i]);au=a;
+  a.addEventListener('play',()=>state(true));
+  a.addEventListener('ended',()=>{state(false);store('ttsDone','1')});
+  a.addEventListener('pause',()=>{if(!a.ended&&au===a)state(false)});
+  a.play().catch(err=>{if(au!==a)return;if(err&&err.name==='NotAllowedError'){state(false);blocked(auto)}else playAudio(i+1,auto)});
+ }
+ function speakTTS(auto){
+  if(!hasTTS){state(false);return}
+  speechSynthesis.cancel();pick();let failed=false;
+  L[lang].lines.forEach((t,i,arr)=>{const u=new SpeechSynthesisUtterance(t);if(voice){u.voice=voice;u.lang=voice.lang}else u.lang=L[lang].tag;u.rate=1.02;
+   u.onstart=()=>state(true);
+   u.onend=()=>{if(i===arr.length-1){state(false);store('ttsDone','1')}};
+   u.onerror=e=>{if(e.error==='canceled'||e.error==='interrupted')return;if(!failed){failed=true;state(false);blocked(auto)}};
+   speechSynthesis.speak(u)});
+ }
+ if(hasTTS&&speechSynthesis.addEventListener)speechSynthesis.addEventListener('voiceschanged',pick);
+ setLang(lang);bar.hidden=false;
+ btn.addEventListener('click',()=>{card.hidden=true;on?stop():speak(false)});
+ g('langEN').addEventListener('click',()=>{card.hidden=true;setLang('en');speak(false)});
+ g('langFR').addEventListener('click',()=>{card.hidden=true;setLang('fr');speak(false)});
+ g('ttsEN').addEventListener('click',()=>{card.hidden=true;store('ttsDone','1');setLang('en');speak(false)});
+ g('ttsFR').addEventListener('click',()=>{card.hidden=true;store('ttsDone','1');setLang('fr');speak(false)});
+ g('ttsNo').addEventListener('click',()=>{card.hidden=true;store('ttsDone','1')});
+ addEventListener('pagehide',()=>{if(hasTTS)speechSynthesis.cancel()});
+ if(!store('ttsDone'))setTimeout(()=>speak(true),900);
+})();
 
 // MESH FLOW: a dot grid that stays faint until the pointer bends it like a rubber sheet (one gaussian, canvas 2D)
 (()=>{
